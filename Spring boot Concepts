@@ -1,0 +1,67 @@
+Spring Boot MicroServices
+
+1. Eureka Service registry and Service discovery
+2. Zulu  Api gateway
+3. Spring cloud config server and config client- using external property sources with Spring boot.
+4. ZipKin server - for distrubed tracing of requests across MicroServices
+5. hystrix, fault tolerance
+6. load balancing client side and server side
+7. Circuit breaker
+8. profiles
+9. transaction management
+10. Spring boot events
+11. Spring Kafka, producer and consumer(subscriber) with kafka,
+12. Spring security , JWT, OAuth2, Authentication and Authorization
+13. Connection pooling
+14. Spring boot with redis , pulisher and subscriber with redis
+15. Spring boot with Swager
+16. Exception Handling
+17. Aspect oriented programming and its concepts
+18. Spring feign - Declartive rest client, WebClients to make API calls, RestTemplates for API calls
+19.Spring boot batch processing
+
+
+Hystrix
+- Used as circuit breaker . Provides circuit breaking pattern
+-> To enable same
+  - spring-cloud-starter-netflix-hystrix dependency
+  - @EnableCircuitBreaker to application class
+  - @HystrixCommand to methods that need circuit breakers.
+    @HystrixCommand(fallbackMethod = "<methodNameWithSameSignature>",
+                    commandProperties = {
+                    @HystrixProperty(name="execution.isolation.thread.timeoutInMilliseconds" , value= "2000"),
+                    @HystrixProperty(name="circuitBreaker.requestVolumeThreshold" , value= "5"),
+                    @HystrixProperty(name="circuitBreaker.errorThresholdPercentage" , value= "50"),
+                    @HystrixProperty(name="circuitBreaker.sleepWindowInMilliseconds" , value= "5000")
+                    })
+
+  -  HystrixDashBoard - representaion of different circuitbreakers implemented in our application, circuits that are open, that are closed,
+                        no of requests coming etc in visual format
+  - To enable dashBoard
+      - Add dependency "spring-cloud-starter-netflix-hystrix-dashboard"
+      - @EnableHystrixDashboard on Appliction class
+      - Add application.properties entry -> "management.endpoints.web.exposure.include=hystrix.stream"
+      - locahost:<port>/hystrix
+
+
+Spring cloud config server and config client
+Usef for externalizing configurations of applications. Remove hardcoding of conf.For ex - DB connections, credentials , feature flagsetc
+Put all configs in separate place like git repository
+Make all microdservices talk to spring cloud config server and inturn this server talks to git reporsitory.
+All the configs and any updates to configs will be pushed to git repo. we dont have to redeploy or restart any code changes.
+As a result we get following advantages
+ -> External configuration
+ ->
+ -> Version history
+ -> Dynamic Run time deployment
+
+To enable Spring cloud server
+1. Add dependency -> spring-cloud-config-server
+2. @EnableConfigServer on Application class
+3. Add property to application properties -> spring.cloud.config.server.git.uri = <url for git repo containing config files>
+4. Now to verify application on which spring-cloud-config-server is running is connected to git and getting repo details,
+  run localhost:<port>/default/application/<profileName> . This should list all configs fir this profile
+5. Now to connect all microservices to our miroservice runnng config server, add "spring.cloud.config.uri:http:/localhost:<port of cloud server>"
+6. Also add @EnableConfigClient to application class of all other Micro Services
+7. @RefreshScope - beans annotated with this scope will be refreshed. And fire "locahost:port/actuator/refresh" api to get latest changes made
+for configs in git repo
